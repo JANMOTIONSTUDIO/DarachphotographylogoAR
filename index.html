@@ -97,9 +97,9 @@
 <body>
 
 <model-viewer id="mv"
-  src="models/dancer.glb"
-  ios-src="models/dancer.usdz"
-  poster="assets/logo.jpg"
+  src="dancer.glb"
+  ios-src="dancer.usdz"
+  poster="logo.jpg"
   alt="darachPhotography ballet dancer kneeling with swan wings"
   ar
   ar-modes="webxr scene-viewer quick-look"
@@ -107,15 +107,14 @@
   ar-placement="floor"
   camera-controls
   touch-action="pan-y"
-  auto-rotate
-  auto-rotate-delay="1500"
-  rotation-per-second="18deg"
+  min-camera-orbit="-60deg 55deg auto"
+  max-camera-orbit="60deg 95deg auto"
   interaction-prompt="none"
   shadow-intensity="1"
   shadow-softness=".8"
   exposure="1.05"
   environment-image="neutral"
-  camera-orbit="20deg 78deg auto"
+  camera-orbit="18deg 82deg auto"
   loading="eager">
 
   <canvas id="bolt"></canvas>
@@ -234,7 +233,7 @@
     setTimeout(strike, 300);
   });
   mv.addEventListener('error', () => {
-    status.textContent = 'Dancer model not found — add models/dancer.glb';
+    status.textContent = 'Dancer model not found — add dancer.glb';
   });
   mv.addEventListener('ar-status', e => {
     if (e.detail.status === 'object-placed') strike(); // bolt as she lands in the room (Android WebXR)
