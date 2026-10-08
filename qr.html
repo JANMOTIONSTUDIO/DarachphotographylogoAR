@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>darachPhotography · AR QR code</title>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Inter:wght@400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #000; color: #eee; font-family: Inter, sans-serif; }
+  .card { text-align: center; padding: 32px 24px; }
+  h1 { font: 400 clamp(20px, 5vw, 34px) Michroma, sans-serif; margin: 0 0 6px; }
+  p { color: #999; font-size: 14px; margin: 0 0 24px; }
+  #qr { background: #fff; padding: 18px; border-radius: 12px; display: inline-block; }
+  #qr img, #qr canvas { display: block; }
+  .url { margin-top: 16px; font-size: 12px; color: #777; word-break: break-all; }
+  button { margin-top: 18px; padding: 12px 22px; border-radius: 999px; border: 1px solid #fff; background: none; color: #fff; font: 12px Michroma, sans-serif; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>darachPhotography</h1>
+  <p>Scan to see the dancer in your space</p>
+  <div id="qr"></div>
+  <div class="url" id="url"></div>
+  <button id="dl">Download PNG</button>
+</div>
+<script>
+  // Points at index.html in the same folder this page is served from.
+  // Override with ?url=https://example.com if you need a different target.
+  const param = new URLSearchParams(location.search).get('url');
+  const target = param || new URL('./', location.href).href;
+  document.getElementById('url').textContent = target;
+  new QRCode(document.getElementById('qr'), {
+    text: target, width: 320, height: 320,
+    colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H
+  });
+  document.getElementById('dl').onclick = () => {
+    const c = document.querySelector('#qr canvas');
+    const a = document.createElement('a');
+    a.download = 'darach-ar-qr.png';
+    a.href = c.toDataURL('image/png');
+    a.click();
+  };
+</script>
+</body>
+</html>

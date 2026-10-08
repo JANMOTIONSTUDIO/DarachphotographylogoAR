@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>darachPhotography · AR</title>
+<meta name="description" content="I spy light… extraordinary light in ordinary places. Place the darachPhotography dancer in your world.">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+<style>
+  :root {
+    --bg: #000;
+    --ink: #f4f4f4;
+    --dim: #9a9a9a;
+    --bolt: #dfeaff;
+    --glow: rgba(150, 190, 255, .85);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--ink); overflow: hidden; }
+  body { font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  model-viewer {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    background: radial-gradient(ellipse at 50% 60%, #2a2a2a 0%, #0b0b0b 55%, #000 100%);
+    --poster-color: transparent;
+    --progress-bar-color: var(--bolt);
+  }
+
+  /* Wordmark */
+  .brand {
+    position: absolute; top: max(28px, env(safe-area-inset-top)); left: 0; right: 0;
+    text-align: center; pointer-events: none; z-index: 3;
+  }
+  .brand h1 {
+    font-family: Michroma, sans-serif; font-weight: 400; letter-spacing: .02em;
+    font-size: clamp(22px, 6.4vw, 54px); color: #fff;
+    text-shadow: 0 0 18px rgba(255,255,255,.25);
+  }
+  .brand h1 b { font-weight: 400; }
+  .tagline {
+    position: absolute; bottom: calc(118px + env(safe-area-inset-bottom)); left: 16px; right: 16px;
+    text-align: center; z-index: 3; pointer-events: none;
+    font-family: Michroma, sans-serif; color: #e9e9e9; line-height: 1.7;
+  }
+  .tagline .a { font-size: clamp(13px, 3.4vw, 20px); }
+  .tagline .b { font-size: clamp(10px, 2.6vw, 15px); font-style: italic; color: var(--dim); }
+
+  /* AR button */
+  .ar-btn {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: calc(40px + env(safe-area-inset-bottom)); z-index: 4;
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 15px 26px; border-radius: 999px; border: 1px solid rgba(255,255,255,.55);
+    background: rgba(0,0,0,.55); color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    font: 400 13px/1 Michroma, sans-serif; letter-spacing: .08em; text-transform: uppercase;
+    white-space: nowrap; cursor: pointer; box-shadow: 0 0 22px rgba(150,190,255,.25);
+  }
+  .ar-btn svg { width: 16px; height: 16px; fill: var(--bolt); }
+  .ar-btn:active { transform: translateX(-50%) scale(.97); }
+
+  .no-ar {
+    position: absolute; bottom: calc(40px + env(safe-area-inset-bottom)); left: 16px; right: 16px;
+    text-align: center; color: var(--dim); font-size: 13px; z-index: 4; display: none;
+  }
+  model-viewer[ar-status="session-started"] .tagline,
+  model-viewer[ar-status="object-placed"] .tagline,
+  model-viewer[ar-status="session-started"] .brand,
+  model-viewer[ar-status="object-placed"] .brand { opacity: 0; }
+
+  /* Lightning */
+  #bolt {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 2; mix-blend-mode: screen;
+  }
+  #flash {
+    position: absolute; inset: 0; pointer-events: none; z-index: 2;
+    background: radial-gradient(ellipse at 50% 30%, rgba(220,232,255,.55), rgba(220,232,255,0) 70%);
+    opacity: 0; transition: opacity .5s ease-out;
+  }
+
+  /* Loader / missing-model message */
+  .status {
+    position: absolute; top: 50%; left: 16px; right: 16px; transform: translateY(-50%);
+    text-align: center; color: var(--dim); font-size: 13px; z-index: 3; pointer-events: none;
+  }
+  .hint {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(0,0,0,.6); color: #fff; padding: 12px 18px; border-radius: 10px;
+    font-size: 13px; z-index: 5; display: none; text-align: center;
+  }
+  model-viewer[ar-status="session-started"] .hint { display: block; }
+</style>
+</head>
+<body>
+
+<model-viewer id="mv"
+  src="models/dancer.glb"
+  ios-src="models/dancer.usdz"
+  poster="assets/logo.jpg"
+  alt="darachPhotography ballet dancer kneeling with swan wings"
+  ar
+  ar-modes="webxr scene-viewer quick-look"
+  ar-scale="auto"
+  ar-placement="floor"
+  camera-controls
+  touch-action="pan-y"
+  auto-rotate
+  auto-rotate-delay="1500"
+  rotation-per-second="18deg"
+  interaction-prompt="none"
+  shadow-intensity="1"
+  shadow-softness=".8"
+  exposure="1.05"
+  environment-image="neutral"
+  camera-orbit="20deg 78deg auto"
+  loading="eager">
+
+  <canvas id="bolt"></canvas>
+  <div id="flash"></div>
+
+  <header class="brand"><h1>darachPhotography</h1></header>
+
+  <div class="status" id="status">Loading…</div>
+
+  <div class="tagline">
+    <div class="a">“I spy light…</div>
+    <div class="b">extraordinary light in ordinary places”</div>
+  </div>
+
+  <button slot="ar-button" class="ar-btn" aria-label="View the dancer in your space">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>
+    View in your space
+  </button>
+
+  <div class="hint">Move your phone slowly to find the floor, then tap</div>
+</model-viewer>
+
+<p class="no-ar" id="noAr">Open this page on your phone to see the dancer in your space.</p>
+
+<script>
+(() => {
+  const mv = document.getElementById('mv');
+  const status = document.getElementById('status');
+  const canvas = document.getElementById('bolt');
+  const flash = document.getElementById('flash');
+  const ctx = canvas.getContext('2d');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Lightning bolt ---------- */
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = canvas.clientWidth * dpr;
+    canvas.height = canvas.clientHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  // Midpoint-displacement bolt from (x1,y1) to (x2,y2)
+  function boltPath(x1, y1, x2, y2, rough, depth, out) {
+    if (depth === 0) { out.push([x2, y2]); return; }
+    const mx = (x1 + x2) / 2 + (Math.random() - .5) * rough;
+    const my = (y1 + y2) / 2 + (Math.random() - .5) * rough * .25;
+    boltPath(x1, y1, mx, my, rough / 2, depth - 1, out);
+    boltPath(mx, my, x2, y2, rough / 2, depth - 1, out);
+  }
+
+  function drawLine(pts, width, alpha) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.lineJoin = 'miter';
+    // glow
+    ctx.shadowBlur = 24; ctx.shadowColor = 'rgba(150,190,255,.9)';
+    ctx.strokeStyle = `rgba(170,200,255,${alpha * .6})`; ctx.lineWidth = width * 3.5; ctx.stroke();
+    // core
+    ctx.shadowBlur = 8; ctx.shadowColor = '#fff';
+    ctx.strokeStyle = `rgba(255,255,255,${alpha})`; ctx.lineWidth = width; ctx.stroke();
+  }
+
+  function makeStrike() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    // A bolt "down the logo": from top, through the wordmark, to the dancer
+    const x0 = w * (0.45 + Math.random() * 0.1);
+    const main = [[x0, -10]];
+    boltPath(x0, -10, w * (0.47 + Math.random() * 0.06), h * 0.62, w * 0.28, 7, main);
+    const branches = [];
+    for (let i = 0; i < 3; i++) {
+      const s = main[4 + Math.floor(Math.random() * (main.length - 12))];
+      const b = [[s[0], s[1]]];
+      const dir = Math.random() < .5 ? -1 : 1;
+      boltPath(s[0], s[1], s[0] + dir * w * (0.08 + Math.random() * 0.15), s[1] + h * (0.08 + Math.random() * 0.12), w * 0.08, 5, b);
+      branches.push(b);
+    }
+    return { main, branches };
+  }
+
+  let striking = false;
+  function strike() {
+    if (striking || reduced) return;
+    striking = true;
+    const s = makeStrike();
+    const frames = [1, .25, 1, .85, .6, .4, .25, .12, 0]; // flicker
+    let f = 0;
+    flash.style.transition = 'none'; flash.style.opacity = '1';
+    requestAnimationFrame(() => { flash.style.transition = 'opacity .6s ease-out'; flash.style.opacity = '0'; });
+    if (navigator.vibrate) navigator.vibrate(30);
+    (function step() {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+      const a = frames[f];
+      if (a > 0) {
+        drawLine(s.main, 2.6, a);
+        s.branches.forEach(b => drawLine(b, 1.2, a * .7));
+      }
+      f++;
+      if (f < frames.length) setTimeout(() => requestAnimationFrame(step), 55);
+      else { ctx.clearRect(0, 0, w, h); striking = false; }
+    })();
+  }
+
+  // Ambient strikes every 6–11 s
+  (function loop() {
+    setTimeout(() => { if (!document.hidden) strike(); loop(); }, 6000 + Math.random() * 5000);
+  })();
+  window.strike = strike; // handy for testing in the console
+
+  /* ---------- Model / AR events ---------- */
+  mv.addEventListener('load', () => {
+    status.remove();
+    setTimeout(strike, 300);
+  });
+  mv.addEventListener('error', () => {
+    status.textContent = 'Dancer model not found — add models/dancer.glb';
+  });
+  mv.addEventListener('ar-status', e => {
+    if (e.detail.status === 'object-placed') strike(); // bolt as she lands in the room (Android WebXR)
+  });
+
+  // Show a gentle note on desktops where AR isn't available
+  setTimeout(() => {
+    if (!mv.canActivateAR) {
+      document.getElementById('noAr').style.display = 'block';
+      const btn = mv.querySelector('.ar-btn'); if (btn) btn.style.display = 'none';
+    }
+  }, 1500);
+})();
+</script>
+</body>
+</html>
